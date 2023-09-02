@@ -1,55 +1,31 @@
-import tensorflow
-from tensorflow import keras
-from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Dense,Flatten
+import pandas as pd
+import numpy as np
 
-(X_train, y_train),(X_test,y_test) = keras.datasets.mnist.load_data()
+import pandas_datareader as pdr
+key=""
 
-X_train.shape
+# df = pdr.get_data_tiingo('AAPL', api_key=key)
+# df.to_csv('AAPL.csv')
+#
+# df=pd.read_csv('AAPL.csv')
+df=pd.read_csv(r"C:\Users\saswa\OneDrive\Documents\pandas data\data\ML_data\Bharat Internship\stock prediction\AAPL.csv")
+print(df.head())
 
-y_train
+print(df.tail())
+
+df1=df.reset_index()['close']
+
 
 import matplotlib.pyplot as plt
-plt.imshow(X_train[0])
+plt.plot(df1)
 
-X_train = X_train/255 #getting values in 0 to 10
-X_test = X_test/255
+from sklearn.preprocessing import MinMaxScaler
+scaler=MinMaxScaler(feature_range=(0,1))
+df1=scaler.fit_transform(np.array(df1).reshape(-1,1))
 
-X_train[0]
+##splitting dataset into train and test split
+training_size=int(len(df1)*0.65)
+test_size=len(df1)-training_size
+train_data,test_data=df1[0:training_size,:],df1[training_size:len(df1),:1]
 
-model = Sequential()  # getting keras sequential model
-
-# now i am going to flatten the layers of the data ie 2d to 1d
-model.add(Flatten(input_shape=(28,28)))
-model.add(Dense(128, activation = 'relu'))
-model.add(Dense(10,activation = 'softmax'))
-model.add(Dense(32,activation = 'relu'))
-
-model.summary()
-
-model.compile(loss= 'sparse_categorical_crossentropy', optimizer = 'Adam',metrics=['accuracy'])
-
-history = model.fit(X_train, y_train, epochs=25, validation_split=0.2)
-
-# predictions
-y_prob = model.predict(X_test)
-
-y_pred = y_prob.argmax(axis=1)
-
-from sklearn.metrics import accuracy_score
-accuracy_score(y_test, y_pred)
-
-plt.plot(history.history['loss'])
-plt.plot(history.history['val_loss'])
-
-plt.plot(history.history['accuracy'])
-plt.plot(history.history['val_accuracy'])
-
-X_test # its zeroth image
-
-plt.imshow(X_test[0])
-
-# model predictions
-model.predict(X_test[0].reshape(1,28,28))
-
-model.predict(X_test[2].reshape(1,28,28))
+print(training_size,test_size)
